@@ -47,7 +47,9 @@ class ListProduct extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Material(
+      child: Hero(
+        tag: this.detailProduct['namaBarang'],
+        child: Material(
           child: InkWell(
             onTap: () =>
             Navigator.of(context).push(
@@ -82,6 +84,7 @@ class ListProduct extends StatelessWidget {
             ),
           ),
         ),
+      ),
     );
   }
 }

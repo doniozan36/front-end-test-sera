@@ -205,8 +205,7 @@ class ProductTerpopuler extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Hero(
-        tag: '',
-        // this.product['namaBarang'],
+        tag: this.product['namaBarang'],
         child: Material(
           child: InkWell(
             onTap: () =>
