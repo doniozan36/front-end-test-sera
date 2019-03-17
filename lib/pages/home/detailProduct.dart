@@ -124,7 +124,7 @@ class _DetailProductState extends State<DetailProduct> {
                   title: Row(
                     children: <Widget>[
                       Expanded(
-                        child: Text(widget.product['hargaBarang']),
+                        child: Text("${widget.product['hargaBarang']}"),
                       )
                     ],
                   ),

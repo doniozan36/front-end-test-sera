@@ -204,10 +204,7 @@ class ProductTerpopuler extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Hero(
-        tag: this.product['namaBarang'],
-        // this.product['namaBarang'],
-        child: Material(
+      child: Material(
           child: InkWell(
             onTap: () =>
             Navigator.of(context).push(
@@ -243,7 +240,6 @@ class ProductTerpopuler extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }
