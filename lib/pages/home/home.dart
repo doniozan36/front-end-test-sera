@@ -26,10 +26,10 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
     await getListKategori();
     await getListProductTerpopuler();
     await getBanner();
+    
   }
 
   Future getBanner() async {
-    Session.setPrefs('cart', null);
     try {
       Response response;
       response =await Dio().get(Env.API_URL+"banner/no-token");
@@ -133,6 +133,8 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin<Home> {
             height: 360.0,
             child: GridView.builder(
               shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              scrollDirection: Axis.vertical,
               itemCount: listProductTerpopuler.length,
               gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
               itemBuilder: (BuildContext context, int index){

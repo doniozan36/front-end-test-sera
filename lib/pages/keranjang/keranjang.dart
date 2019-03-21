@@ -9,6 +9,7 @@ class Keranjang extends StatefulWidget {
 
 class _KeranjangState extends State<Keranjang> {
   List<dynamic> listKeranjang = [];
+  int totalCart = 0;
 
   @override
   void initState() {
@@ -19,10 +20,12 @@ class _KeranjangState extends State<Keranjang> {
 
   initialization() async {
     await getCart();
+    await getTotalCart();
   }
 
   Future getCart() async {
     var cart = await Session.getPrefs('cart');
+    listKeranjang = [];
     if(cart != null){
       var cartDecode = json.decode(cart);
       setState(() {
@@ -31,12 +34,81 @@ class _KeranjangState extends State<Keranjang> {
         }
       });
     }
-    
+  }
+
+  Future getTotalCart() async {
+    var cart = await Session.getPrefs('cart');
+    totalCart = 0;
+    if(cart != null){
+      var cartDecode = json.decode(cart);
+      setState(() {
+        for (var i = 0; i < cartDecode.length; i++) {
+          totalCart += cartDecode[i]['price'] * cartDecode[i]['qty'];
+        }
+      });
+    }
+  }
+
+  changeJumlah(String condition,int id) async {
+    var decodeCart = json.decode(await Session.getPrefs('cart'));
+    for (var i = 0; i < decodeCart.length; i++) {
+      if(decodeCart[i]['id'] == id){
+        if(condition == 'up'){
+          decodeCart[i]['qty']++; 
+        } else if(condition == 'down') {
+          if(decodeCart[i]['qty']-1 == 0){
+            showDialog(
+              context: context,
+              builder: (BuildContext context){
+                return AlertDialog(
+                  title: Text('Alert'),
+                  content: Text('Qty Product Not Null')
+                );
+              }
+            );
+          } else {
+            decodeCart[i]['qty']--;
+          }
+        }
+      }
+    }
+    Session.setPrefs('cart', json.encode(decodeCart));
+    initialization();
+  }
+
+  alertDelete(int id) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: Text('Alert'),
+          content: Text('Are You Sure Delete Product In Cart ?'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Yes'),
+              onPressed: () => deleteOneCart(id),
+            )
+          ],
+        );
+      }
+    );
+  }
+
+  deleteOneCart(int id) async {
+    var decodeCart = json.decode(await Session.getPrefs('cart'));
+    var tampung = [];
+    for (var i = 0; i < decodeCart.length; i++) {
+      if(decodeCart[i]['id'] != id){
+        tampung.add(decodeCart[i]);
+      }
+    }
+    Session.setPrefs('cart', json.encode(tampung));
+    initialization();
+    Navigator.of(context).pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    print(listKeranjang);
     return Scaffold(
       appBar: AppBar(
         title: Text('Keranjang')
@@ -44,13 +116,74 @@ class _KeranjangState extends State<Keranjang> {
       body: ListView.builder(
         itemCount: listKeranjang.length,
         itemBuilder: (context, index){
-          return ListProduct(
-            nama_product: listKeranjang[index]['name'],
-            gambar_product: Env.URL_IMAGE+listKeranjang[index]['image'],
-            harga_product: listKeranjang[index]['price'],
-            size: listKeranjang[index]['size'],
-            warna: listKeranjang[index]['color'],
-            jumlah: listKeranjang[index]['qty']
+          return SizedBox(
+            child: Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: Image.network(Env.URL_IMAGE+listKeranjang[index]['image'], width: 80.0, height: 80.0),
+                    title: Text(listKeranjang[index]['name']),
+                    subtitle: Column(
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.all(0.0),
+                              child: Text('Size:'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Text(listKeranjang[index]['size'], style: TextStyle(color: Colors.red)),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(5.0, 8.0, 8.0, 8.0),
+                              child: Text('Warna:'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Text(listKeranjang[index]['color'], style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            "${listKeranjang[index]['price']}",
+                            style: TextStyle(
+                              fontSize: 17.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    trailing: Column(
+                      children: <Widget>[
+                        IconButton(icon: Icon(Icons.arrow_drop_up),onPressed: () { changeJumlah('up',listKeranjang[index]['id']); }),
+                        Text(listKeranjang[index]['qty'].toString()),
+                        IconButton(icon: Icon(Icons.arrow_drop_down),onPressed: (){ changeJumlah('down',listKeranjang[index]['id']); })
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: MaterialButton(
+                          onPressed: (){
+                            alertDelete(listKeranjang[index]['id']);
+                          },
+                          color: Colors.red,
+                          textColor: Colors.white,
+                          // elevation: 0.2,
+                          child: Text('Delete')
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
           );
         },
       ),
@@ -59,11 +192,11 @@ class _KeranjangState extends State<Keranjang> {
         child: Row(
           children: <Widget>[
             Expanded(child: ListTile(
-              title: Text('data'),
-              subtitle: Text('23232'),
+              title: Text('Total'),
+              subtitle: Text('${totalCart}'),
             )),
             Expanded(child: MaterialButton(onPressed: (){},
-              child: Text('data',style: TextStyle(color: Colors.white),),
+              child: Text('Checkout',style: TextStyle(color: Colors.white),),
               color: Colors.red,
             ))
           ],
@@ -73,143 +206,3 @@ class _KeranjangState extends State<Keranjang> {
   }
 }
 
-class ListProduct extends StatelessWidget {
-  final nama_product;
-  final gambar_product;
-  final harga_product;
-  final size;
-  final warna;
-  final jumlah;
-
-  ListProduct({
-    this.gambar_product,
-    this.harga_product,
-    this.nama_product,
-    this.jumlah,
-    this.size,
-    this.warna
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-    // height: 160,
-    child: Card(
-      child: Column(
-        children: [
-          ListTile(
-            leading: Image.network(gambar_product, width: 80.0, height: 80.0),
-            title: Text(nama_product),
-            subtitle: Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Text('Size:'),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Text(size, style: TextStyle(color: Colors.red)),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(5.0, 8.0, 8.0, 8.0),
-                      child: Text('Warna:'),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Text(warna, style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                ),
-                Container(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    "$harga_product",
-                    style: TextStyle(
-                      fontSize: 17.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red
-                    ),
-                  ),
-                )
-              ],
-            ),
-            trailing: Column(
-              children: <Widget>[
-                IconButton(icon: Icon(Icons.arrow_drop_up),onPressed: (){}),
-                Text(this.jumlah.toString()),
-                IconButton(icon: Icon(Icons.arrow_drop_down),onPressed: (){})
-              ],
-            ),
-          ),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: MaterialButton(
-                  onPressed: (){
-                  },
-                  color: Colors.blue,
-                  textColor: Colors.white,
-                  child: Text('Edit')
-                ),
-              ),
-              Expanded(
-                child: MaterialButton(
-                  onPressed: (){
-                  },
-                  color: Colors.red,
-                  textColor: Colors.white,
-                  // elevation: 0.2,
-                  child: Text('Hapus')
-                ),
-              )
-            ],
-          )
-        ],
-      ),
-    ),
-  );
-    // return Card(
-    //   child: ListTile(
-    //     leading: Image.network(gambar_product, width: 80.0, height: 80.0),
-    //     title: Text(nama_product),
-    //     subtitle: Column(
-    //       children: <Widget>[
-    //         Row(
-    //           children: <Widget>[
-    //             Padding(
-    //               padding: const EdgeInsets.all(0.0),
-    //               child: Text('Size:'),
-    //             ),
-    //             Padding(
-    //               padding: const EdgeInsets.all(4.0),
-    //               child: Text(size, style: TextStyle(color: Colors.red)),
-    //             ),
-    //             Padding(
-    //               padding: const EdgeInsets.fromLTRB(20.0, 8.0, 8.0, 8.0),
-    //               child: Text('Warna:'),
-    //             ),
-    //             Padding(
-    //               padding: const EdgeInsets.all(4.0),
-    //               child: Text(warna, style: TextStyle(color: Colors.red)),
-    //             ),
-    //           ],
-    //         ),
-    //         Container(
-    //           alignment: Alignment.topLeft,
-    //           child: Text(
-    //             "$harga_product",
-    //             style: TextStyle(
-    //               fontSize: 17.0,
-    //               fontWeight: FontWeight.bold,
-    //               color: Colors.red
-    //             ),
-    //           ),
-    //         )
-    //       ],
-    //     ),
-    //   ),
-    // );
-  }
-}

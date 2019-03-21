@@ -31,7 +31,8 @@ class _ChangePasswordState extends State<ChangePassword> {
   Future doChangePassword() async {
     try {
       Response response;
-      response = await Dio().post(Env.API_URL+"user/change-password/"+widget.id+"?token="+this.token,
+      print(Env.API_URL+"user/change-password/"+widget.id.toString()+"?token="+this.token);
+      response = await Dio().post(Env.API_URL+"user/change-password/"+widget.id.toString()+"?token="+this.token,
         data:{
           'password'    : password,
           'newPassword' : newPassword
@@ -73,6 +74,7 @@ class _ChangePasswordState extends State<ChangePassword> {
         );
       }
     } catch (e) {
+      print(e);
     }
   }
   @override

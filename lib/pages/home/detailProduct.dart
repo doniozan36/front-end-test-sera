@@ -241,10 +241,10 @@ class _DetailProductState extends State<DetailProduct> {
                         return AlertDialog(
                           title: Text('Jumlah'),
                           content: ListView.builder(
-                            itemCount: int.parse(widget.product['jumlahBarang']),
+                            itemCount: widget.product['jumlahBarang'],
                             itemBuilder: (BuildContext contect, int index){
                               return ListTile(
-                                title: Text((index+1).toString()),
+                                title: Text("${(index+1)}"),
                                 onTap: (){
                                   setState(() {
                                     this.qtyValue = (index+1).toString();

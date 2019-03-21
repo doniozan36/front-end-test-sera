@@ -25,8 +25,6 @@ class _ProfileState extends State<Profile> {
   }
 
   initialization() async {
-    this.id     = await Session.getPrefs('id');
-    this.token  = await Session.getPrefs('token');
     await getProfile();
   }
 
@@ -44,6 +42,8 @@ class _ProfileState extends State<Profile> {
   Future getProfile() async {
     try {
       Response response;
+      this.id     = await Session.getPrefs('id');
+      this.token  = await Session.getPrefs('token');
       var url = Env.API_URL+'user/'+this.id+'?token='+this.token;
       response = await Dio().get(url);
       var data =response.data['data'];
@@ -53,7 +53,7 @@ class _ProfileState extends State<Profile> {
           this.imageProfile = Env.URL_IMAGE+this.profile['image']; 
         });
       } else {
-        doLogout();
+        // doLogout();
       }
     } catch (e) {      
     }
@@ -61,6 +61,7 @@ class _ProfileState extends State<Profile> {
   
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),

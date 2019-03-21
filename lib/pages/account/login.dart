@@ -22,7 +22,7 @@ class _LoginState extends State<Login> {
           'email'    : email,
           'password' : password
         });
-      Session.setPrefs('id', response.data[0]['id']);
+      Session.setPrefs('id', response.data[0]['id'].toString());
       Session.setPrefs('token', response.data[0]['token']);
       showDialog(
         context: context,
